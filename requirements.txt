@@ -1,0 +1,8 @@
+# if on windows: pip install pypiwin32
+autobahn[twisted]
+scipy
+webrtcvad
+numpy
+ffmpeg-python
+uuid
+soundfile
