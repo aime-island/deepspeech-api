@@ -10,8 +10,8 @@ def create_model(path, config):
     beam_width = config.get('beam_width')
     lm_weight = config.get('lm_weight')
     w_weight = config.get('w_weight')
-    n_features = config.get('n_features')
-    n_context = config.get('n_context')
+    n_features = 26
+    n_context = 9
 
     # Búa til lm paths
     alphabet = os.path.join(lm_path, 'alphabet.txt')

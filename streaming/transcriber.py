@@ -1,11 +1,14 @@
 import collections
 import webrtcvad
 import numpy as np
+import wave
+import os
+from datetime import datetime
 
 
 class StreamTranscriber(object):
 
-    def __init__(self, aggressiveness=3, model=None):
+    def __init__(self, aggressiveness, model):
         self.vad = webrtcvad.Vad(aggressiveness)
         self.model = model
         self.frame_duration_ms = 30
@@ -15,6 +18,14 @@ class StreamTranscriber(object):
     def generate_frames(self):
         while True:
             yield self.buffer_queue.get()
+
+    """ def write_wav(self, filename, data):
+        wf = wave.open(filename, 'wb')
+        wf.setnchannels(1)
+        wf.setsampwidth(2)
+        wf.setframerate(self.sample_rate)
+        wf.writeframes(data)
+        wf.close() """
 
     def voice_detection(self, padding_ms=300, ratio=0.75, frames=None):
         if frames is None:
@@ -50,12 +61,19 @@ class StreamTranscriber(object):
         self.running = True
         frames = self.voice_detection()
         sctxt = self.model.setupStream()
+        # wav_data = bytearray()
         for frame in frames:
             if frame is not None:
                 self.model.feedAudioContent(
                     sctxt, np.frombuffer(frame, np.int16))
+                # wav_data.extend(frame)
             else:
                 text = self.model.finishStream(sctxt)
                 print('transcript:', text)
+                """ self.write_wav(
+                    os.path.join('./tmp',
+                    datetime.now().strftime("savewav_%Y-%m-%d_%H-%M-%S_%f.wav")),
+                    wav_data) """
+                # wav_data = bytearray()
                 transcript_queue.put(bytes(text, 'utf8'))
                 sctxt = self.model.setupStream()

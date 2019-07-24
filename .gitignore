@@ -4,3 +4,4 @@ tmp
 utils/__pycache__/
 streaming/__pycache__/
 models/
+config.py

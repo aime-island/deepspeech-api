@@ -64,14 +64,6 @@ class Stream(WebSocketServerProtocol):
         print("Client connecting: {0}".format(request.peer))
         self.buffer_queue = queue.Queue()
         self.transcript_queue = queue.Queue()
-        self.ab = AudioBuffer(buffer_queue=self.buffer_queue, input_rate=44100)
-        self.stream = StreamTranscriber(aggressiveness=3, model=ds)
-        self.run_stream = thread_with_trace(
-            target=self.stream.run,
-            args=(self.buffer_queue, self.transcript_queue, ))
-        self.send_transcripts = thread_with_trace(
-            target=self.sendTranscripts,
-            args=(self.transcript_queue, ))
 
     def onClose(self, wasClean, code, reason):
         print("WebSocket connection closed: {0}".format(reason))
@@ -84,6 +76,21 @@ class Stream(WebSocketServerProtocol):
 
     def onMessage(self, payload, isBinary):
         if not isBinary:
+            settings = json.loads(payload)
+            input_rate = settings['sample_rate']
+            aggressiveness = settings['aggressiveness']
+            self.ab = AudioBuffer(
+                buffer_queue=self.buffer_queue,
+                input_rate=input_rate)
+            self.stream = StreamTranscriber(
+                aggressiveness=aggressiveness,
+                model=ds)
+            self.run_stream = thread_with_trace(
+                target=self.stream.run,
+                args=(self.buffer_queue, self.transcript_queue, ))
+            self.send_transcripts = thread_with_trace(
+                target=self.sendTranscripts,
+                args=(self.transcript_queue, ))
             self.run_stream.start()
             self.send_transcripts.start()
         else:
