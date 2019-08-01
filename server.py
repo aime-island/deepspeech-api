@@ -58,7 +58,8 @@ class Stream(WebSocketServerProtocol):
     def sendTranscripts(self, transcripts):
         while(True):
             ts = transcripts.get()
-            self.sendMessage(ts)
+            payload = json.dumps(ts, ensure_ascii=False).encode('utf8')
+            self.sendMessage(payload)
 
     def onConnect(self, request):
         print("Client connecting: {0}".format(request.peer))
