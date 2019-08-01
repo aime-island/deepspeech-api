@@ -65,16 +65,21 @@ class StreamTranscriber(object):
             'type': 'final',
             'transcript': ''
         }
+        counter = 0
         for frame in frames:
             if frame is not None:
                 self.model.feedAudioContent(
                     sctxt, np.frombuffer(frame, np.int16))
-                output = self.model.intermediateDecode(sctxt)
-                if (prev_output != output):
-                    print(output)
-                    output_inter['transcript'] = output
-                    transcript_queue.put(output_inter)
-                    prev_output = output
+                if counter == 8:
+                    output = self.model.intermediateDecode(sctxt)
+                    if (prev_output != output):
+                        print(output)
+                        output_inter['transcript'] = output
+                        transcript_queue.put(output_inter)
+                        prev_output = output
+                    counter = 0
+                else:
+                    counter += 1
             else:
                 text = self.model.finishStream(sctxt)
                 print('transcript:', text)
